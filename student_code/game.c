@@ -113,19 +113,34 @@ int apply_move_option(int option, int board[MAX_COLUMNS][MAX_COLUMNS]){
 /********************************************************/
 
 bool is_goal(int board[MAX_ROWS][MAX_COLUMNS]){
-	// @brief Computes whether the board is in a goal state
+    // @brief Computes whether the board is in a goal state
 	// @Returns:
 	// - true, if GOAL_VALUE is found in the board
 	// - false, otherwise
+
+    // Cheek the condition by a nested loop
+    // And also denife the constant GOAL is 4 in the file "game.h"
+    for(int i = 0;i<MAX_ROWS;i++){
+        for(int j = 0;j<MAX_COLUMNS;j++){
+            if (board[i][j] == GOAL){
+                return true;
+            }
+        }
+    }
     return false;
 }
-
 
 bool is_terminal(int board[MAX_ROWS][MAX_COLUMNS]){
 	// @brief Computes whether the board is in a terminal state
 	// @Returns:
-	// - true, if the board is_goal or a valid move is available
+	// - true, if the board is_goal or a valid move is no available
 	// - false, otherwise
+
+    // Cheek the condition by using the operators "||" (or),
+    // Call the function "is_goal" and the functions relate "valid move"
+    if ((is_goal(board)) || !(can_move_up(board) || can_move_down(board) || can_move_left(board) || can_move_right(board))){
+        return true;
+    }
     return false;
 }
 
@@ -133,28 +148,192 @@ int move_right(int board[MAX_ROWS][MAX_COLUMNS]){
     // @brief Move all numbers in board to the RIGHT, 
     //        merging adjacent and equal values
     // @Returns the aggregated score of all merged values
-    return 0;
+    
+    // Declare a varieble score to compute the score of game, 
+    // it returns the scores that player obtained in this turn,
+    // and it returns the changed board
+    int score = 0;
+    
+    // We build a nested loop, 
+    // the first loop is for cheeking numbers from the top to the bottom,(rows)
+    // the scond loop is for cheeking numbers from the right to the left,(columne)
+    // the third loop is for operating the numbers,(changes numbers and compute score)
+
+    for (int i = 0; i < MAX_ROWS; i++){
+        // Declare a varieble called ranges to avoid counting all numbers in the columne at once
+        int ranges = 0;
+        for (int j = (MAX_COLUMNS - 2); j >= 0; j--){
+            if (board[i][j] != 0){
+                for (int k = (j + 1); k < (MAX_ROWS - ranges); k++){
+                    if (board[i][k] == board[i][j]){
+                        board[i][k] += board[i][j];
+                        board[i][j] = 0;
+                        score += board[i][k];
+                        ranges = (MAX_ROWS - k);
+                        break;
+                    }
+                    else if (board[i][k] != 0){
+                        board[i][k-1] = board[i][j];
+                        if ((k-1) != j) {
+                            board[i][j] = 0;
+                        }
+                        break;
+                    }
+                    else if (k == (MAX_ROWS - 1) - ranges){
+                        board[i][k] = board[i][j];
+                        board[i][j] = 0;
+                        break;
+                    }            
+                }
+            }
+            
+        }
+    }
+    return score;
 }
 
 int move_left(int board[MAX_ROWS][MAX_COLUMNS]){
     // @brief Move all numbers in board to the LEFT, 
     //        merging adjacent and equal values
     // @Returns the aggregated score of all merged values
-    return 0;
+
+    // Declare a varieble score to compute the score of game, 
+    // it returns the scores that player obtained in this turn,
+    // and it returns the board changed
+    int score = 0;
+    
+    // We build a nested loop, 
+    // the first loop is for cheeking numbers from the top to the bottom,(rows)
+    // the scond loop is for cheeking numbers from the left to the right,(columne)
+    // the third loop is for operating the numbers,(changes numbers and compute score)
+
+    for (int i = 0; i < MAX_ROWS; i++){
+        // Declare a varieble called ranges to avoid counting all numbers in the columne at once
+        int ranges = 0;
+        for (int j = (MAX_COLUMNS - 3); j < MAX_COLUMNS; j++){
+            if (board[i][j] != 0){
+                for (int k = (j - 1); k > (ranges - 1); k--){
+                    if (board[i][k] == board[i][j]){
+                        board[i][k] += board[i][j];
+                        board[i][j] = 0;
+                        score += board[i][k];
+                        ranges = (k+1);
+                        break;
+                    }
+                    else if (board[i][k] != 0){
+                        board[i][k+1] = board[i][j];
+                        if ((k+1) != j) {
+                            board[i][j] = 0;
+                        }
+                        break;
+                    }
+                    else if (k == 0 + ranges){
+                        board[i][k] = board[i][j];
+                        board[i][j] = 0;
+                        break;
+                    }               
+                }
+            }
+            
+        }
+    }
+    return score;
 }
 
 int move_up(int board[MAX_ROWS][MAX_COLUMNS]){
     // @brief Move all numbers in board to the UP, 
     //        merging adjacent and equal values
     // @Returns the aggregated score of all merged values
-    return 0;
+
+    // Declare a varieble score to compute the score of game, 
+    // it returns the scores that player obtained in this turn,
+    // and it returns the changed board
+    int score = 0;
+
+    // We build a nested loop, 
+    // the first loop is for cheeking numbers from the left to the right,(columns)
+    // the scond loop is for cheeking numbers from the top to the bottom,(rows)
+    // the third loop is for operating the numbers,(changes numbers and compute score)
+
+    for (int i = 0; i < MAX_COLUMNS; i++){
+        // Declare a varieble called ranges to avoid counting all numbers in the columne at once
+        int ranges = 0;
+        for (int j = (MAX_ROWS - 3); j < MAX_ROWS; j++){
+            if (board[j][i] != 0){
+                for (int k = (j - 1); k > (ranges - 1); k--){
+                    if (board[k][i] == board[j][i]){
+                        board[k][i] += board[j][i];
+                        board[j][i] = 0;
+                        score += board[k][i];
+                        ranges = (k+1);
+                        break;
+                    }
+                    else if (board[k][i] != 0){
+                        board[k+1][i] = board[j][i];
+                        if ((k+1) != j) {
+                            board[j][i] = 0;
+                        }
+                        break;
+                    }
+                    else if (k == 0 + ranges){
+                        board[k][i] = board[j][i];
+                        board[j][i] = 0;
+                        break;
+                    }
+                }
+            }
+
+        }
+    }
+    return score;
 }
 
 int move_down(int board[MAX_ROWS][MAX_COLUMNS]){
     // @brief Move all numbers in board to the DOWN, 
     //        merging adjacent and equal values
     // @Returns the aggregated score of all merged values
-    return 0;
+
+    // Declare a varieble score to compute the score of game, 
+    // it returns the scores that player obtained in this turn,
+    // and it returns the changed board
+    int score = 0;
+    
+    // We build a nested loop, 
+    // the first loop is for cheeking numbers from the left to the right,(columns)
+    // the scond loop is for cheeking numbers from the bottom to the top,(rows)
+    // the third loop is for operating the numbers,(changes numbers and compute score)
+
+    for (int i = 0; i < MAX_COLUMNS; i++){
+        // Declare a varieble called ranges to avoid counting all numbers in the columne at once
+        int ranges = 0;
+        for (int j = (MAX_ROWS - 2); j >= 0; j--){
+            if (board[j][i] != 0){
+                for (int k = (j + 1); k < (MAX_ROWS - ranges); k++){
+                    if (board[k][i] == board[j][i]){
+                        board[k][i] += board[j][i];
+                        board[j][i] = 0;
+                        score += board[k][i];
+                        ranges = (MAX_ROWS - k);
+                        break;
+                    }
+                    else if (board[k][i] != 0){
+                        board[k-1][i] = board[j][i];
+                        if ((k-1) != j) {
+                            board[j][i] = 0;
+                        }
+                        break;
+                    }
+                    else if (k == (MAX_ROWS - 1) - ranges){
+                        board[k][i] = board[j][i];
+                        board[j][i] = 0;
+                        break;
+                    }            
+                }
+            }
+            
+        }
+    }
+    return score;
 }
 
 bool can_move_up(int board[MAX_ROWS][MAX_COLUMNS]){
@@ -162,6 +341,28 @@ bool can_move_up(int board[MAX_ROWS][MAX_COLUMNS]){
     // @Returns:
     // - true, if UP move would change the board,
     // - false, otherwise
+
+    // Traverse each column
+    for (int j = 0; j < MAX_COLUMNS; j++){
+        // Select top value for comparisons
+        int check_value = board[MAX_ROWS - 1][j];
+        for (int i = MAX_ROWS - 2; i > -1; i--){
+            if (check_value != 0){
+                if (board[i][j] == 0){
+                    // For a given non-zero value, check if there's space below
+                    return true;
+                }
+                else if (board[i][j] == check_value){
+                    // Check if there's equivalent value 
+                    return true;
+                }  
+            }
+
+            if (check_value == 0 || check_value != board[i][j]) {
+                check_value = board[i][j];
+            }
+        }
+    }
     return false;
 }
 
@@ -170,6 +371,31 @@ bool can_move_right(int board[MAX_ROWS][MAX_COLUMNS]){
     // @Returns:
     // - true, if RIGHT move would change the board,
     // - false, otherwise
+
+    // Traverse each row
+    for (int i = 0; i < MAX_ROWS; i++){
+        // Select first value for comparisons
+        int check_value = board[i][0];
+        for (int j = 1; j < MAX_COLUMNS; j++){
+            if (check_value != 0){
+                // If selected value is a number and not empty (0)
+                if (board[i][j] == 0){
+                    // Checks if there is empty space at the right
+                    return true;
+                }
+                else if (board[i][j] == check_value){
+                    // Checks if there's value that can be added together
+                    return true;
+                }  
+            }
+
+            // Update value to continue comparing to the right
+            if (check_value == 0 || check_value != board[i][j]) {
+                check_value = board[i][j];
+            }
+        }
+    }
+
     return false;
 }
 
@@ -178,6 +404,29 @@ bool can_move_down(int board[MAX_ROWS][MAX_COLUMNS]){
     // @Returns:
     // - true, if DOWN move would change the board,
     // - false, otherwise
+
+    // Same logic as moving right
+    // Traverse for each row, traverse its column
+    // Check if for a given non-zero value there's an empty space below it
+    // Or if there's an equivalent value
+    // Else return false
+    for (int j = 0; j < MAX_COLUMNS; j++){
+        int check_value = board[0][j];
+        for (int i = 1; i < MAX_ROWS; i++){
+            if (check_value != 0){
+                if (board[i][j] == 0){
+                    return true;
+                }
+                else if (board[i][j] == check_value){
+                    return true;
+                }
+            }
+
+            if (check_value == 0 || check_value != board[i][j]) {
+                check_value = board[i][j];
+            }
+        }
+    }
     return false;
 }
 
@@ -186,6 +435,27 @@ bool can_move_left(int board[MAX_ROWS][MAX_COLUMNS]){
     // @Returns:
     // - true, if LEFT move would change the board,
     // - false, otherwise
+
+    for (int i = 0; i < MAX_ROWS; i++){
+        // Select a value to compare with the rest of the column
+        // Right-most value
+        int check_value = board[i][MAX_COLUMNS-1];
+        // Check from right to left
+        for (int j = MAX_COLUMNS - 2; j > -1; j--){
+            if (check_value != 0){
+                if (board[i][j] == 0){
+                    return true;
+                }
+                else if (board[i][j] == check_value){
+                    return true;
+                }
+            }
+
+            // Update value if they are not the same as selected value or if it is zero
+            if (check_value == 0 || check_value != board[i][j]) {
+                check_value = board[i][j];
+            }
+        }
+    }
     return false;
 }
-

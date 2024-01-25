@@ -7,6 +7,8 @@
 /// LAB 1 - macros
 // ToDo: declare macros
 #define MAX_ROWS 4
+#define MAX_COLUMNS 4
+#define GOAL 2048
 
 /********************************************************/
 /****************** Provided functions ******************/
