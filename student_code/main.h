@@ -4,19 +4,21 @@
 #include "common.h"
 #include "utils.h"
 #include "game.h"
+#include "sequence.h"
+#include "session.h"
 
-void run_game(int *best_score);
+void run_game(Session *session);
 
-void new_game(int *best_score);
+void new_game(Session *session);
 
-void save_game();
+void save_game(Session *session);
 
-void load_game();
+void load_game(Session *session);
 
-void resume_game();
+void resume_game(Session *session);
 
 void print_menu();
 
-void run();
+void run(Session *session);
 
 #endif 

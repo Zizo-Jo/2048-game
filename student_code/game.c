@@ -1,11 +1,11 @@
 #include "game.h"
 
+
 /********************************************************/
 /****************** Provided functions ******************/
 /********************************************************/
 
 void add_random_number(int board[MAX_ROWS][MAX_COLUMNS]){
-	// Precompute all locations with 0s
     int rows[MAX_ROWS*MAX_COLUMNS];
     int cols[MAX_ROWS*MAX_COLUMNS];
     int total = 0;
@@ -18,14 +18,14 @@ void add_random_number(int board[MAX_ROWS][MAX_COLUMNS]){
             }
         }
     }
-    // Select one of the 0 locations at random
+    
     if(total > 0){
         int pos = rand()%total;
-        // Add number 2 with 75% prob, or 4 with 25% prob.
+        // 75% -> 2; 25% -> 4
         int value;
         if(rand()%4 == 0) value = 4;
         else value = 2;
-        
+        printf("Added number %d at (%d,%d)\n", value, rows[pos], cols[pos] );
         board[rows[pos]][cols[pos]] = value;
     }
 }
@@ -107,6 +107,7 @@ int apply_move_option(int option, int board[MAX_COLUMNS][MAX_COLUMNS]){
     }
     return 0;
 }
+
 
 /********************************************************/
 /************* LAB 1 - functions to program *************/
@@ -459,3 +460,174 @@ bool can_move_left(int board[MAX_ROWS][MAX_COLUMNS]){
     }
     return false;
 }
+
+/********************************************************/
+/************* LAB 2 - functions to program *************/
+/********************************************************/
+
+void init_game_state(GameState *game_state){
+    // @brief Set the game state score and all board cells to 0, and
+    //        adds the number 2 in two random cells of the board
+    // @Returns: nothing
+
+    // Sets board values to 0
+    for (int i = 0; i < MAX_ROWS; i++){
+        for (int j = 0; j < MAX_COLUMNS; j++){
+            game_state->board[i][j] = 0;
+        }
+    }
+    // Sets scores to zero
+    game_state->score = 0;
+
+    // Adds two random numbers
+    add_random_number(game_state->board);
+    add_random_number(game_state->board);
+}
+
+
+void print_game_state(GameState* game_state){
+    // @brief Prints the game state score and board on the screen
+    // @Returns: nothing
+
+    printf("Score: %d\n", game_state->score);
+    // Pass board array to print_board function
+    printf("\n");
+    print_board(game_state->board);
+}
+
+
+/********************************************************/
+/************* LAB 3 - functions to program *************/
+/********************************************************/
+
+GameState* make_game_state(){
+    // @brief Allocates memory for a GameState and returns 
+    //        its address
+    // @Returns: a pointer to a new GameState
+    GameState* new_game_state = malloc(sizeof(*new_game_state));
+    return new_game_state;
+}
+
+GameState* copy(GameState *game_state){
+    // @brief Makes a new game state in which all data from 
+    //        game_state is copied, then returns the new address
+    // @Returns: a pointer to a new GameState
+    GameState* new_game_state = malloc(sizeof(*new_game_state));
+    new_game_state->score = game_state->score;
+    for (int i = 0; i < MAX_ROWS; i++){
+        for (int j = 0; j < MAX_COLUMNS; j++){
+            new_game_state->board[i][j] = game_state->board[i][j];
+        }
+    }
+    return new_game_state;
+}
+
+void free_game_state(GameState *game_state){
+    // @brief Frees the game_state memory if it is not NULL
+    // @Returns: nothing
+    if (game_state != NULL){
+        free(game_state);
+    }
+}
+
+
+/********************************************************/
+/************* LAB 4 - functions to program *************/
+/********************************************************/
+
+int recursive_best_score(GameState *game_state, int depth){
+	// @brief Returns the game_state score if depth is 0 or the game
+	//        state is terminal, otherwise makes MAX_REPETITIONS 
+	//        recursive calls for every valid move. 
+	// @Returns: the max aggregated score found among all function calls
+	
+	// 0. set the best score to the current game state score
+	
+	// 1. Implement base cases (return the best score)
+	
+	// 2. For every valid option run:
+	//     - set an integer aggregated_score to 0
+	//     - run MAX_REPETITIONS times the following steps:
+	//       - 2.a, copy the game_state
+	//       - 2.b, apply the valid option to the copied board and
+	//              increase copied game state score
+	//       - 2.c, add to aggregated_score the result of the 
+	//              recursive call with the current option and depth-1
+	//       - 2.d, free the copied game
+	//     - set the best_score to the max value between best_score
+	//       and the aggregated_score
+	
+	// 3. Return the best score
+    int best_score = game_state->score;
+
+    if (depth <= 0 || is_terminal(game_state->board)){
+        return best_score;
+    }
+
+    int moves[] = {MOVE_UP, MOVE_DOWN, MOVE_RIGHT, MOVE_LEFT};
+
+    for (int i = 0; i < sizeof(moves)/sizeof(moves[0]); i++){
+        int aggregated_score = 0;
+        if (is_valid_option(moves[i], game_state->board)){
+            for (int j = 0; j < MAX_REPETITIONS; j++){
+                GameState *copy_state = malloc(sizeof(GameState));
+                *copy_state = *game_state; 
+                copy_state->score += apply_move_option(moves[i], copy_state->board);
+                aggregated_score = copy_state->score + recursive_best_score(copy_state, depth-1);
+                free(copy_state);
+            }
+            best_score = max(aggregated_score, best_score);
+        }
+    }
+
+    return best_score;
+
+}
+
+int show_best_move(GameState *game_state){
+	// @brief For every valid option (move), runs MAX_REPETITIONS 
+	//        recursive_best_score calls for the resulting game state
+	//        after applying the move and MAX_DEPTH. The outcome of 
+	//        the recursive call is aggregated to the total score for
+	//        that move, and if it is better than the best score so far, 
+	//        the total score is saved as the best one. At the end, the best move
+	//        is printed on screen and returned.
+	// @Returns: the integer identifier of the best move
+    
+    int best_score = 0;
+    int best_move = 0;
+    
+    int moves[] = {MOVE_UP, MOVE_DOWN, MOVE_RIGHT, MOVE_LEFT};
+    for (int i = 0; i < sizeof(moves)/sizeof(moves[0]); i++){
+        int total_score = 0;
+        if (is_valid_option(moves[i], game_state->board)){
+            for (int j = 0; j < MAX_REPETITIONS; j++){
+                GameState *copy_state = malloc(sizeof(GameState));
+                *copy_state = *game_state; 
+                copy_state->score += apply_move_option(moves[i], copy_state->board);
+                total_score = copy_state->score + recursive_best_score(copy_state, MAX_DEPTH);
+                free(copy_state);
+            }
+            if (total_score > best_score){
+                best_score = total_score;
+                best_move = moves[i];
+            }
+        }
+    }
+    switch(best_move){
+        case MOVE_UP:
+            printf("Best move is UP. Expected score: %d\n", best_score/MAX_REPETITIONS);
+            break;
+        case MOVE_RIGHT:
+            printf("Best move is RIGHT. Expected score: %d\n", best_score/MAX_REPETITIONS);
+            break;
+        case MOVE_DOWN:
+            printf("Best move is DOWN. Expected score: %d\n", best_score/MAX_REPETITIONS);
+            break;
+        case MOVE_LEFT:
+            printf("Best move is LEFT. Expected score: %d\n", best_score/MAX_REPETITIONS);
+            break;
+    }
+    return best_move;
+}
+
